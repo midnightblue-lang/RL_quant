@@ -1,4 +1,5 @@
 provider: akshare
+symbol_list_endpoint: spot_sina
 endpoint: daily_sina
 start_date: "2015-01-01"
 end_date: null
@@ -16,6 +17,16 @@ paths:
   standard_daily_dir: data/interim/akshare/daily
   download_report: data/reports/download_results.csv
   quality_report: data/reports/data_quality.md
+full_market:
+  symbol_limit: null
+  manifest_flush_every: 20
+  progress_every: 50
+  paths:
+    symbol_list: data/reports/full_a_stock_symbols.csv
+    manifest: data/reports/full_download_manifest.csv
+    failures: data/reports/full_download_failures.csv
+    quality_report: data/reports/full_data_quality.md
+    summary_report: data/reports/full_data_ingestion.md
 quality:
   min_rows: 250
   large_return_threshold: 0.35

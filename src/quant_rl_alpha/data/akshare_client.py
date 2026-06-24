@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import pandas as pd
+from requests.exceptions import RequestException
 
 from quant_rl_alpha.data.cache import (
     raw_hist_path,
@@ -33,6 +34,8 @@ class DownloadResult:
     rows: int
     skipped: bool
     error: str | None = None
+    attempts: int = 0
+    error_type: str | None = None
 
 
 class AkshareClient:
@@ -41,8 +44,13 @@ class AkshareClient:
 
         self._ak = ak
 
-    def list_a_stocks(self, *, exclude_bj: bool = True) -> pd.DataFrame:
-        raw = self._ak.stock_info_a_code_name()
+    def list_a_stocks(self, *, exclude_bj: bool = True, source: str = "code_name") -> pd.DataFrame:
+        if source == "code_name":
+            raw = self._ak.stock_info_a_code_name()
+        elif source == "spot_sina":
+            raw = self._ak.stock_zh_a_spot()
+        else:
+            raise ValueError(f"Unsupported AKShare symbol list source: {source}")
         return standardize_symbol_list(raw, exclude_bj=exclude_bj)
 
     def fetch_daily_bars(
@@ -112,19 +120,28 @@ def download_daily_bars(
     for symbol in symbols:
         raw_path = raw_hist_path(symbol)
         standard_path = standard_daily_path(symbol)
+        expected_source = f"akshare:{endpoint}"
         if skip_existing and raw_path.exists() and standard_path.exists():
-            cached_rows = len(read_daily_bars(standard_path))
-            results.append(
-                DownloadResult(
-                    symbol=symbol,
-                    endpoint=endpoint,
-                    standard_path=standard_path,
-                    raw_path=raw_path,
-                    rows=cached_rows,
-                    skipped=True,
+            cached = read_daily_bars(standard_path)
+            if _cache_matches_request(cached, source=expected_source, adjust=adjust):
+                results.append(
+                    DownloadResult(
+                        symbol=symbol,
+                        endpoint=endpoint,
+                        standard_path=standard_path,
+                        raw_path=raw_path,
+                        rows=len(cached),
+                        skipped=True,
+                        attempts=0,
+                    )
                 )
+                continue
+            LOGGER.info(
+                "Cached data for %s does not match endpoint=%s adjust=%s; redownloading",
+                symbol,
+                endpoint,
+                adjust,
             )
-            continue
 
         last_error: Exception | None = None
         for attempt in range(1, retry_times + 1):
@@ -153,10 +170,11 @@ def download_daily_bars(
                         raw_path=raw_path,
                         rows=len(frame),
                         skipped=False,
+                        attempts=attempt,
                     )
                 )
                 break
-            except (ValueError, KeyError, OSError, RuntimeError) as error:
+            except (ValueError, KeyError, OSError, RuntimeError, RequestException) as error:
                 last_error = error
                 if attempt == retry_times:
                     LOGGER.warning(
@@ -174,6 +192,8 @@ def download_daily_bars(
                             rows=0,
                             skipped=False,
                             error=str(error),
+                            attempts=attempt,
+                            error_type=type(error).__name__,
                         )
                     )
                 else:
@@ -192,16 +212,18 @@ def _standardize_daily_raw(
     adjust: str,
     endpoint: str,
 ) -> pd.DataFrame:
-    return standardize_daily_bars(
-        raw,
-        symbol=symbol,
-        name=name,
-        meta=NormalizationMeta(
-            source=f"akshare:{endpoint}",
-            adjust=adjust,
-            volume_unit=volume_unit_for_endpoint(endpoint),
-        ),
+    meta = NormalizationMeta(
+        source=f"akshare:{endpoint}", adjust=adjust, volume_unit=volume_unit_for_endpoint(endpoint)
     )
+    return standardize_daily_bars(raw, symbol=symbol, name=name, meta=meta)
+
+
+def _cache_matches_request(frame: pd.DataFrame, *, source: str, adjust: str) -> bool:
+    if frame.empty:
+        return False
+    sources = set(frame["source"].dropna().astype(str).unique())
+    adjusts = set(frame["adjust"].dropna().astype(str).unique())
+    return sources == {source} and adjusts == {adjust}
 
 
 def volume_unit_for_endpoint(endpoint: str) -> str:

@@ -7,8 +7,8 @@ from quant_rl_alpha.data.schema import standardize_daily_bars, standardize_symbo
 def test_standardize_symbol_list_excludes_bj_symbols() -> None:
     raw = pd.DataFrame(
         {
-            "code": ["000001", "600000", "830001"],
-            "name": ["平安银行", "浦发银行", "北交所样例"],
+            "code": ["sz000001", "sh600000", "bj920000", "830001"],
+            "name": ["平安银行", "浦发银行", "北交所样例1", "北交所样例2"],
         }
     )
 

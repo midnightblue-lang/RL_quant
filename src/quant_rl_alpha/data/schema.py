@@ -66,7 +66,9 @@ class NormalizationMeta:
 
 
 def normalize_symbol(symbol: str | int) -> str:
-    text = str(symbol).strip()
+    text = str(symbol).strip().lower()
+    if len(text) >= 8 and text[:2] in {"sh", "sz", "bj"} and text[2:].isdigit():
+        text = text[2:]
     if "." in text:
         text = text.split(".")[0]
     return text.zfill(6)
@@ -78,13 +80,16 @@ def standardize_symbol_list(frame: pd.DataFrame, *, exclude_bj: bool = True) -> 
     _require_columns(renamed, required, "Symbol list")
 
     result = renamed.loc[:, ["symbol", "name"]].copy()
-    result["symbol"] = result["symbol"].map(normalize_symbol)
+    original_symbol = result["symbol"].astype(str).str.strip()
+    result["_bj_prefixed"] = original_symbol.str.lower().str.startswith("bj")
+    result["symbol"] = original_symbol.map(normalize_symbol)
     result["name"] = result["name"].astype(str).str.strip()
     result = result.drop_duplicates("symbol").sort_values("symbol").reset_index(drop=True)
 
     if exclude_bj:
-        result = result[~result["symbol"].str.startswith(("8", "4"))].reset_index(drop=True)
-    return result
+        bj_code = result["symbol"].str.startswith(("8", "4", "9"))
+        result = result[~result["_bj_prefixed"] & ~bj_code].reset_index(drop=True)
+    return result.drop(columns=["_bj_prefixed"])
 
 
 def standardize_daily_bars(

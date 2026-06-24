@@ -40,6 +40,8 @@ def write_download_report(results: list[DownloadResult], path: str | Path) -> Pa
             "rows": result.rows,
             "skipped": result.skipped,
             "error": _text_or_empty(result.error),
+            "attempts": result.attempts,
+            "error_type": _text_or_empty(result.error_type),
         }
         for result in results
     ]

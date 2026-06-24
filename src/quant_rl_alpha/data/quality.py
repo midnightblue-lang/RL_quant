@@ -16,6 +16,7 @@ ISSUE_COUNT_FIELDS: Final[tuple[str, ...]] = (
     "non_positive_price_count",
     "negative_volume_count",
     "negative_amount_count",
+    "volume_amount_mismatch_count",
     "ohlc_inconsistent_count",
     "large_return_count",
     "vwap_outside_bar_count",
@@ -43,6 +44,7 @@ class SymbolQuality:
     zero_volume_count: int
     negative_volume_count: int
     negative_amount_count: int
+    volume_amount_mismatch_count: int
     ohlc_inconsistent_count: int
     large_return_count: int
     vwap_outside_bar_count: int
@@ -77,6 +79,9 @@ def inspect_daily_bars(frame: pd.DataFrame, config: QualityConfig | None = None)
     vwap_tolerance = config.vwap_bar_tolerance
     vwap_low = ordered["low"] * (1 - vwap_tolerance)
     vwap_high = ordered["high"] * (1 + vwap_tolerance)
+    volume_amount_mismatch = ((ordered["volume"] > 0) & (ordered["amount"] <= 0)) | (
+        (ordered["amount"] > 0) & (ordered["volume"] <= 0)
+    )
 
     summary = SymbolQuality(
         symbol=symbol,
@@ -91,6 +96,7 @@ def inspect_daily_bars(frame: pd.DataFrame, config: QualityConfig | None = None)
         zero_volume_count=_count_true(ordered["volume"] == 0),
         negative_volume_count=_count_true(ordered["volume"] < 0),
         negative_amount_count=_count_true(ordered["amount"] < 0),
+        volume_amount_mismatch_count=_count_true(volume_amount_mismatch),
         ohlc_inconsistent_count=_count_true(
             (ordered["high"] < high_floor) | (ordered["low"] > low_ceiling)
         ),
@@ -116,11 +122,13 @@ def write_quality_report(summary: pd.DataFrame, path: str | Path) -> Path:
     output = Path(path)
     ensure_dir(output.parent)
     issue_count = int(summary["has_issue"].sum()) if "has_issue" in summary else 0
+    zero_volume_symbols = int((summary.get("zero_volume_count", pd.Series(dtype=int)) > 0).sum())
     lines = [
         "# 数据质量报告",
         "",
         f"- 股票数：{len(summary)}",
         f"- 有质量提示的股票数：{issue_count}",
+        f"- 出现零成交量的股票数：{zero_volume_symbols}",
         "",
         "## 字段说明",
         "",
@@ -128,6 +136,7 @@ def write_quality_report(summary: pd.DataFrame, path: str | Path) -> Path:
         "- `vwap_outside_bar_count` 只作为口径提示，"
         "前复权 OHLC 与原始成交额/成交量可能不完全一致。",
         "- `zero_volume_count` 通常代表停牌或不可交易日，后续股票池和回测阶段应继续处理。",
+        "- `volume_amount_mismatch_count` 标记成交量和成交额口径明显矛盾的行。",
         "",
         "## 明细",
         "",

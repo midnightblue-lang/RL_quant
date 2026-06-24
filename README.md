@@ -2,11 +2,11 @@
 
 这是一个个人量化研究项目，目标是先搭建可靠的数据、标签、回测和评估基础，再逐步进入公式因子挖掘、RL alpha 生成和 XGBoost 截面预测。
 
-当前阶段：**阶段 2：股票池与标签基础构建**，阶段 1 数据下载、缓存与质量检查链路已保留。
+当前阶段：**阶段 2 已完成，正在阶段 2.5：全量数据接入与审计**，阶段 1 数据链路和阶段 2 股票池/标签链路已保留。
 
 ## 当前边界
 
-- 当前已搭建项目骨架、配置、基础工具、阶段 1 数据模块和阶段 2 股票池/标签模块。
+- 当前已搭建项目骨架、配置、基础工具、阶段 1 数据模块、阶段 2 股票池/标签模块和阶段 2.5 全量数据审计入口。
 - 暂不接入真实交易、模拟盘、券商 API 或自动下单。
 - 暂不实现 RL 公式生成器和 XGBoost 训练。
 - 数据、缓存、模型和报告输出不提交到仓库。
@@ -79,5 +79,21 @@ python -m quant_rl_alpha.cli stage2-build
 4. 构建未来 20 个市场交易日收益标签并输出 `data/processed/labels.parquet`。
 
 股票池和标签口径见 [docs/UNIVERSE_AND_LABELS.md](docs/UNIVERSE_AND_LABELS.md)。
+
+## 阶段 2.5 全量数据接入与审计
+
+如果要把 AKShare 当前可获取的 A 股日频数据完整缓存到本地，执行：
+
+```powershell
+python -m quant_rl_alpha.cli download-full
+```
+
+如果希望全量下载后立刻重建 daily panel、月度股票池和未来 20 日标签，执行：
+
+```powershell
+python -m quant_rl_alpha.cli stage25-full-data
+```
+
+全量下载支持断点续传：当 raw 和 standard 缓存都存在时会按 `skip_existing: true` 跳过该股票。输出包括股票列表、下载 manifest、失败列表、全市场质量报告和摘要报告。详细口径见 [docs/FULL_DATA_INGESTION.md](docs/FULL_DATA_INGESTION.md)。
 
 如果当前机器没有系统 Python，可以先使用 Codex 内置 Python 或后续安装标准 Python，再创建 `.venv`。
