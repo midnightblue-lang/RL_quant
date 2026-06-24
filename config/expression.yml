@@ -1,0 +1,29 @@
+max_tokens: 20
+features:
+  - open
+  - close
+  - high
+  - low
+  - volume
+  - vwap
+constants:
+  - -30
+  - -10
+  - -5
+  - -2
+  - -1
+  - -0.5
+  - -0.01
+  - 0.01
+  - 0.5
+  - 1
+  - 2
+  - 5
+  - 10
+  - 30
+time_deltas:
+  - 10
+  - 20
+  - 30
+  - 40
+  - 50

@@ -1,0 +1,30 @@
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Local data, model artifacts, and generated reports.
+data/raw/*
+data/interim/*
+data/processed/*
+data/features/*
+data/models/*
+data/reports/*
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/processed/.gitkeep
+!data/features/.gitkeep
+!data/models/.gitkeep
+!data/reports/.gitkeep
+
+# Local logs and run outputs.
+logs/
+outputs/
+checkpoints/
+
+# Local reference papers.
+Automatic formulaic alpha generation with reinforcement learning.pdf

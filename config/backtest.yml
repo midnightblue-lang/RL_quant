@@ -1,0 +1,13 @@
+portfolio:
+  selection: top_pct
+  top_pct: 0.10
+  weighting: equal
+  rebalance_frequency: monthly
+execution:
+  signal_time: month_end_close
+  trade_time: next_open
+  cannot_buy_limit_up: true
+  cannot_sell_limit_down: true
+costs:
+  buy_cost_bps: 15
+  sell_cost_bps: 20

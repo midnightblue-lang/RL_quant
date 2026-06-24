@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quant-rl-alpha"
+version = "0.1.0"
+description = "RL formulaic alpha mining and cross-sectional quant research project."
+readme = "README.md"
+requires-python = ">=3.12"
+
+[project.scripts]
+quant-rl-alpha = "quant_rl_alpha.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

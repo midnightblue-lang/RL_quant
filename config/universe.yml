@@ -1,0 +1,11 @@
+min_listed_days: 250
+liquidity_window: 20
+top_n: 1500
+exclude_st: true
+exclude_zero_volume: true
+rebalance_frequency: monthly
+label_horizon: 20
+paths:
+  daily_panel: data/interim/daily_panel.parquet
+  universe_monthly: data/processed/universe_monthly.parquet
+  labels: data/processed/labels.parquet

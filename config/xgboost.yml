@@ -1,0 +1,12 @@
+target: future_20d_rank
+train_window_years: 3
+rebalance_frequency: monthly
+model:
+  objective: reg:squarederror
+  max_depth: 4
+  learning_rate: 0.03
+  n_estimators: 500
+  subsample: 0.8
+  colsample_bytree: 0.8
+  reg_lambda: 5
+  tree_method: hist

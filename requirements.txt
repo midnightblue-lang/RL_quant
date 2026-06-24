@@ -1,0 +1,15 @@
+setuptools>=68
+akshare
+pandas
+numpy
+pyarrow
+pyyaml
+jupyterlab
+matplotlib
+plotly
+scikit-learn
+xgboost
+tqdm
+joblib
+pytest
+ruff

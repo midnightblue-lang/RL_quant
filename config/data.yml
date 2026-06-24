@@ -1,0 +1,31 @@
+provider: akshare
+endpoint: daily_sina
+start_date: "2015-01-01"
+end_date: null
+adjust: qfq
+cache_format: parquet
+exclude_bj: true
+retry_times: 3
+sleep_seconds: 0.2
+skip_existing: true
+sample_symbols:
+  - "000001"
+  - "600000"
+paths:
+  raw_hist_dir: data/raw/akshare/hist
+  standard_daily_dir: data/interim/akshare/daily
+  download_report: data/reports/download_results.csv
+  quality_report: data/reports/data_quality.md
+quality:
+  min_rows: 250
+  large_return_threshold: 0.35
+  vwap_bar_tolerance: 0.02
+  required_columns:
+    - date
+    - symbol
+    - open
+    - high
+    - low
+    - close
+    - volume
+    - amount

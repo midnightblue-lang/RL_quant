@@ -1,0 +1,10 @@
+algorithm: ppo
+gamma: 1.0
+clip_epsilon: 0.2
+lstm_layers: 2
+lstm_hidden_size: 128
+dropout: 0.1
+head_hidden_size: 64
+pool_size: 30
+invalid_reward: -1.0
+device: cuda
