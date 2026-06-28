@@ -1,0 +1,8 @@
+pool_size: 30
+learning_rate: 0.0005
+max_steps: 10000
+tolerance: 500
+l1_alpha: 0.005
+min_valid_dates: 24
+min_valid_ratio: 0.2
+min_stocks_per_date: 100

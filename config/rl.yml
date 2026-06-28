@@ -1,6 +1,11 @@
 algorithm: ppo
+seed: 2026
 gamma: 1.0
 clip_epsilon: 0.2
+learning_rate: 0.0003
+ppo_epochs: 4
+value_coef: 0.5
+entropy_coef: 0.01
 lstm_layers: 2
 lstm_hidden_size: 128
 dropout: 0.1
@@ -8,3 +13,19 @@ head_hidden_size: 64
 pool_size: 30
 invalid_reward: -1.0
 device: cuda
+train_iterations: 1000
+episodes_per_iteration: 16
+data:
+  daily_panel: data/interim/daily_panel.parquet
+  labels: data/processed/labels.parquet
+  train_start: "2015-01-01"
+  train_end: "2020-12-31"
+  validation_start: "2021-01-01"
+  validation_end: "2021-12-31"
+outputs:
+  pool: data/features/rl_alpha_pool.parquet
+  metrics: data/reports/rl_training_metrics.parquet
+  validation: data/reports/rl_validation_metrics.parquet
+  config: data/reports/rl_training_config.yml
+  report: data/reports/rl_factor_report.html
+  pool_ic_live_report: data/reports/rl_pool_ic_live.html

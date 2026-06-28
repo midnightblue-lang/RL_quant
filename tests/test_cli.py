@@ -12,6 +12,44 @@ class FakeFullIngestResult:
         self.summary_report_path = "summary.md"
 
 
+class FakeRLTrainingResult:
+    def __init__(self):
+        self.pool_rows = 30
+        self.metric_rows = 1000
+        self.validation_rows = 31
+        self.pool_path = "pool.parquet"
+        self.metrics_path = "metrics.parquet"
+        self.validation_path = "validation.parquet"
+        self.config_path = "config.yml"
+
+
+class FakeRLReportResult:
+    def __init__(self):
+        self.mode = "preflight"
+        self.pool_size = 0
+        self.target_pool_size = 30
+        self.missing_artifacts = ("pool",)
+        self.report_path = "rl_factor_report.html"
+
+
+class FakeStage6DatasetResult:
+    def __init__(self):
+        self.rows = 100
+        self.alpha_count = 30
+        self.dataset_path = "xgboost_dataset.parquet"
+
+
+class FakeStage6TrainingResult:
+    def __init__(self):
+        self.dataset_path = "xgboost_dataset.parquet"
+        self.prediction_rows = 50
+        self.metric_rows = 2
+        self.feature_importance_rows = 30
+        self.predictions_path = "xgboost_predictions.parquet"
+        self.metrics_path = "xgboost_metrics.parquet"
+        self.feature_importance_path = "xgboost_feature_importance.parquet"
+
+
 def test_cli_quality_report_command(monkeypatch) -> None:
     calls: list[str] = []
 
@@ -73,3 +111,71 @@ def test_cli_stage25_full_data_command(monkeypatch) -> None:
 
     assert main(["stage25-full-data"]) == 0
     assert calls == ["full", "stage2"]
+
+
+def test_cli_stage5_train_command(monkeypatch) -> None:
+    calls: list[str] = []
+
+    def fake_training(config_name="rl"):
+        calls.append(config_name)
+        return FakeRLTrainingResult()
+
+    monkeypatch.setattr("quant_rl_alpha.cli.run_rl_alpha_mining", fake_training)
+
+    assert main(["stage5-train"]) == 0
+    assert calls == ["rl"]
+
+    calls.clear()
+    assert main(["stage5-train", "--config", "rl_small"]) == 0
+    assert calls == ["rl_small"]
+
+
+def test_cli_stage5_report_command(monkeypatch) -> None:
+    calls: list[str] = []
+
+    def fake_report(config_name="rl"):
+        calls.append(config_name)
+        return FakeRLReportResult()
+
+    monkeypatch.setattr("quant_rl_alpha.cli.build_rl_factor_report", fake_report)
+
+    assert main(["stage5-report"]) == 0
+    assert calls == ["rl"]
+
+    calls.clear()
+    assert main(["stage5-report", "--config", "rl_small"]) == 0
+    assert calls == ["rl_small"]
+
+
+def test_cli_stage6_build_dataset_command(monkeypatch) -> None:
+    calls: list[str] = []
+
+    def fake_dataset(config_name="xgboost"):
+        calls.append(config_name)
+        return FakeStage6DatasetResult()
+
+    monkeypatch.setattr("quant_rl_alpha.cli.build_xgboost_dataset", fake_dataset)
+
+    assert main(["stage6-build-dataset"]) == 0
+    assert calls == ["xgboost"]
+
+    calls.clear()
+    assert main(["stage6-build-dataset", "--config", "custom_xgb"]) == 0
+    assert calls == ["custom_xgb"]
+
+
+def test_cli_stage6_train_command(monkeypatch) -> None:
+    calls: list[str] = []
+
+    def fake_training(config_name="xgboost"):
+        calls.append(config_name)
+        return FakeStage6TrainingResult()
+
+    monkeypatch.setattr("quant_rl_alpha.cli.run_xgboost_training", fake_training)
+
+    assert main(["stage6-train"]) == 0
+    assert calls == ["xgboost"]
+
+    calls.clear()
+    assert main(["stage6-train", "--config", "custom_xgb"]) == 0
+    assert calls == ["custom_xgb"]

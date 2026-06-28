@@ -1,6 +1,21 @@
 target: future_20d_rank
 train_window_years: 3
+prediction_start: "2022-01-01"
 rebalance_frequency: monthly
+features:
+  expected_alpha_count: 30
+  winsorize_lower: 0.01
+  winsorize_upper: 0.99
+  standardize: true
+data:
+  daily_panel: data/interim/daily_panel.parquet
+  labels: data/processed/labels.parquet
+  alpha_pool: data/features/rl_alpha_pool.parquet
+outputs:
+  dataset: data/features/xgboost_dataset.parquet
+  predictions: data/reports/xgboost_predictions.parquet
+  metrics: data/reports/xgboost_metrics.parquet
+  feature_importance: data/reports/xgboost_feature_importance.parquet
 model:
   objective: reg:squarederror
   max_depth: 4
@@ -10,3 +25,4 @@ model:
   colsample_bytree: 0.8
   reg_lambda: 5
   tree_method: hist
+  random_state: 2026
